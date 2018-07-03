@@ -84,6 +84,11 @@ class GPUConfig
             rgbStepMap["GeForce GTX 970"] = std::pair<int, int>(160, 64);
             rgbResMap["GeForce GTX 970"] = std::pair<int, int>(128, 272);
             so3StepMap["GeForce GTX 970"] = std::pair<int, int>(96, 64);
+
+            icpStepMap["GeForce GTX 960"] = std::pair<int, int>(512, 16);
+            rgbStepMap["GeForce GTX 960"] = std::pair<int, int>(96, 48);
+            rgbResMap["GeForce GTX 960"] = std::pair<int, int>(256, 288);
+            so3StepMap["GeForce GTX 960"] = std::pair<int, int>(128, 32);
                
             icpStepMap["GeForce GTX 965M"] = std::pair<int, int>(256, 32);
             rgbStepMap["GeForce GTX 965M"] = std::pair<int, int>(224, 16);
