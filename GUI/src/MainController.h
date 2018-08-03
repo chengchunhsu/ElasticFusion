@@ -21,8 +21,11 @@
 
 #include "Tools/GUI.h"
 #include "Tools/GroundTruthOdometry.h"
+#include "Tools/ForwardKinematicsOdometry.h"
 #include "Tools/RawLogReader.h"
 #include "Tools/LiveLogReader.h"
+#include "Tools/ROSBagReader.h"
+#include "Tools/SpartanLogReader.h"
 
 #ifndef MAINCONTROLLER_H_
 #define MAINCONTROLLER_H_
@@ -44,6 +47,7 @@ class MainController
         ElasticFusion * eFusion;
         GUI * gui;
         GroundTruthOdometry * groundTruthOdometry;
+        ForwardKinematicsOdometry * forwardKinematicsOdometry;
         LogReader * logReader;
 
         bool iclnuim;

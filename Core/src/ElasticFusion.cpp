@@ -85,12 +85,12 @@ ElasticFusion::ElasticFusion(const int timeDelta,
     createCompute();
     createFeedbackBuffers();
 
-    std::string filename = fileName;
-    filename.append(".freiburg");
+    //std::string filename = fileName;
+    //filename.append(".freiburg");
 
-    std::ofstream file;
-    file.open(filename.c_str(), std::fstream::out);
-    file.close();
+    //std::ofstream file;
+    //file.open(filename.c_str(), std::fstream::out);
+    //file.close();
 
     Stopwatch::getInstance().setCustomSignature(12431231);
 }
@@ -310,7 +310,7 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
             if(bootstrap)
             {
                 assert(inPose);
-                currPose = currPose * (*inPose);
+                currPose = *inPose; // note: this has changed bootsrap to give global frame guesses. this diverges from previous interface.
             }
 
             Eigen::Vector3f trans = currPose.topRightCorner(3, 1);

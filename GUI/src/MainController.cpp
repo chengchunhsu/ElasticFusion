@@ -24,6 +24,7 @@ MainController::MainController(int argc, char * argv[])
    eFusion(0),
    gui(0),
    groundTruthOdometry(0),
+   forwardKinematicsOdometry(0),
    logReader(0),
    framesToSkip(0),
    resetButton(false),
@@ -34,41 +35,54 @@ MainController::MainController(int argc, char * argv[])
 
     std::string calibrationFile;
     Parse::get().arg(argc, argv, "-cal", calibrationFile);
-
-    Resolution::getInstance(640, 480);
-
-    if(calibrationFile.length())
-    {
-        loadCalibration(calibrationFile);
-    }
-    else
-    {
-        Intrinsics::getInstance(528, 528, 320, 240);
-    }
-
     Parse::get().arg(argc, argv, "-l", logFile);
 
-    if(logFile.length())
+    if (isSpartanLog(logFile)) 
     {
-//        logReader = new RawLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
-        logReader = new LcmLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
-    }
-    else
+        std::cout << "Loading camera info and calibration from Spartan log" << std::endl;
+        int pixels_width, pixels_height;
+        double fx, fy, cx, cy;
+        std::string camera_info_filename = logFile+"/camera_info.yaml";
+        spartanGetParams(camera_info_filename, pixels_width, pixels_height, fx, fy, cx, cy);
+        Resolution::getInstance(pixels_width, pixels_height);
+        Intrinsics::getInstance(fx, fy, cx, cy);
+        logReader = new SpartanLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
+        forwardKinematicsOdometry = new ForwardKinematicsOdometry(logFile+"/pose_data.yaml");
+    } 
+    else 
     {
-        bool flipColors = Parse::get().arg(argc,argv,"-f",empty) > -1;
-        logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::OpenNI2);
-
-        good = ((LiveLogReader *)logReader)->cam->ok();
-
-#ifdef WITH_REALSENSE
-        if(!good)
+        Resolution::getInstance(640, 480);
+        if(calibrationFile.length())
         {
-          delete logReader;
-          logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::RealSense);
-
-          good = ((LiveLogReader *)logReader)->cam->ok();
+            loadCalibration(calibrationFile);
         }
-#endif
+        else
+        {
+            Intrinsics::getInstance(528, 528, 320, 240);
+        }
+    
+        if(logFile.length())
+        {
+            logReader = new RawLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
+            
+        }
+        else
+        {
+            bool flipColors = Parse::get().arg(argc,argv,"-f",empty) > -1;
+            logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::OpenNI2);
+
+            good = ((LiveLogReader *)logReader)->cam->ok();
+
+    #ifdef WITH_REALSENSE
+            if(!good)
+            {
+              delete logReader;
+              logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::RealSense);
+
+              good = ((LiveLogReader *)logReader)->cam->ok();
+            }
+    #endif
+        }
     }
 
     if(Parse::get().arg(argc, argv, "-p", poseFile) > 0)
@@ -147,6 +161,11 @@ MainController::~MainController()
     if(groundTruthOdometry)
     {
         delete groundTruthOdometry;
+    }
+
+    if(forwardKinematicsOdometry)
+    {
+        delete forwardKinematicsOdometry;
     }
 
     if(logReader)
@@ -289,11 +308,15 @@ void MainController::run()
                     *currentPose = groundTruthOdometry->getTransformation(logReader->timestamp);
                 }
 
-                //printf("returning from run\n");
-                //good = false;
-                //return;
-
-                eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
+                if(forwardKinematicsOdometry)
+                {
+                    currentPose = new Eigen::Matrix4f;
+                    currentPose->setIdentity();
+                    *currentPose = forwardKinematicsOdometry->getTransformation(logReader->getCurrentFrame());
+                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier, false);
+                } else {
+                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
+                }
 
                 std::cout << "camera pose:" << std::endl << eFusion->getCurrPose() << std::endl;
 
@@ -589,4 +612,6 @@ void MainController::run()
         TOCK("GUI");
         std::cout << "has more: " << logReader->hasMore() << std::endl;
     }
+
+    eFusion->savePly();
 }

@@ -28,8 +28,15 @@ find_package(efusion REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(Threads REQUIRED)
 
-find_package(lcm REQUIRED CONFIG)
-find_package(bot2-core REQUIRED CONFIG)
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  tf
+  sensor_msgs
+  rosbag
+)
+find_package(Yaml-cpp REQUIRED)
 
 if(WIN32)
   find_package(RealSense QUIET)
@@ -51,6 +58,11 @@ include_directories(${Pangolin_INCLUDE_DIRS})
 include_directories(${CUDA_INCLUDE_DIRS})
 include_directories(${EFUSION_INCLUDE_DIR})
 include_directories(${OPENNI2_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+include_directories(${YAML_CPP_SOURCE_DIR}/test)
 
 include_directories("/usr/include/librealsense2")
 add_definitions(-DWITH_REALSENSE)
@@ -95,8 +107,9 @@ target_link_libraries(ElasticFusion
                       ${SUITESPARSE_LIBRARIES}
                       ${BLAS_LIBRARIES}
                       ${LAPACK_LIBRARIES}
-                      lcm
-                      lcmtypes_bot2-core
+                      ${catkin_LIBRARIES}
+                      ${OpenCV_LIBS}
+                      yaml-cpp
 )
 
 
