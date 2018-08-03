@@ -26,6 +26,7 @@ find_package(CUDA REQUIRED)
 find_package(OpenNI2 REQUIRED)
 find_package(efusion REQUIRED)
 find_package(SuiteSparse REQUIRED)
+find_package(Threads REQUIRED)
 
 find_package(lcm REQUIRED CONFIG)
 find_package(bot2-core REQUIRED CONFIG)
