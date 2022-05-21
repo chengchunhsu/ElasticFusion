@@ -119,6 +119,11 @@ class GPUConfig
             rgbStepMap["GeForce GTX 1070"] = std::pair<int, int>(128, 96);
             rgbResMap["GeForce GTX 1070"] = std::pair<int, int>(256, 464);
             so3StepMap["GeForce GTX 1070"] = std::pair<int, int>(256, 48);
+               
+            icpStepMap["NVIDIA GeForce RTX 3090"] = std::pair<int, int>(192, 160);
+            rgbStepMap["NVIDIA GeForce RTX 3090"] = std::pair<int, int>(240, 80);
+            rgbResMap["NVIDIA GeForce RTX 3090"] = std::pair<int, int>(128, 512);
+            so3StepMap["NVIDIA GeForce RTX 3090"] = std::pair<int, int>(80, 160);
 
             if(icpStepMap.find(dev) == icpStepMap.end())
             {
